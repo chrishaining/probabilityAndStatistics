@@ -1,0 +1,92 @@
+---
+title: "Cleaning the Life Expectancy Data"
+output: html_notebook
+---
+
+The purpose of this file is to import, inspect and clean data from the file `life_expectancy.csv`, downloaded from [OECD](https://stats.oecd.org/index.aspx?queryid=30114).
+```{r}
+library(readr)
+library(dplyr)
+
+life <- read_csv("life_expectancy.csv")
+head(life)
+
+```
+
+```{r}
+# select columns
+life <- life %>% select(Variable, Country, Year, Value)
+life <- life %>% filter(Year==2017, Variable=="Total population at birth")
+life <- life %>% select(-Variable)
+head(life, 200)
+# filter rows
+```
+
+```{r}
+european_countries <- c("Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia", "Spain", "Sweden", "Iceland", "Liechtenstein", "Norway", "Switzerland", "United Kingdom")
+
+european_life <- life %>% filter(Country %in% european_countries)
+european_life <- european_life %>% arrange(Country)
+european_life <- european_life %>% select(-Year)
+european_life
+```
+
+```{r}
+
+euro_length = length(european_countries)
+euro_length
+# there are only 25 rows in european_life - it should have more. check the length of the gdp file to see how many are missing.
+gdp <- read_csv("european_gdp.csv")
+gdp
+# so, there should be 30 rows.
+# but I have found that Slovakia is missing. 
+gdp <- gdp %>% add_row(Country="Slovakia", population= 5450421, gdp_per_capita=17604.95)
+gdp <- gdp %>% arrange(Country)
+```
+
+```{r}
+# The ones that are missing:
+# Bulgaria
+# Croatia
+# Malta
+# Romania
+# Slovakia
+Country <- c("Bulgaria", "Croatia", "Cyprus", "Malta", "Romania", "Slovakia")
+bulgaria <- 71.3
+croatia <- 78.09
+cyprus <- 80.58
+malta <- 82.12
+romania <- 75.65
+slovakia <- 77.17
+Value=c(bulgaria, croatia, cyprus, malta, romania, slovakia)
+additional_countries <- data.frame(Country, Value)
+ 
+additional_countries
+
+```
+
+```{r}
+#merge the dataframes
+european_life <- european_life %>% bind_rows(additional_countries)
+european_life <- european_life %>% arrange(Country)
+european_life
+```
+
+```{r}
+# merge european_life with gdp data
+gdp_life <- gdp %>% bind_cols(european_life)
+#gdp_life <- gdp %>% select(Country)
+gdp_life_names <- colnames(gdp_life)
+gdp_life_names
+
+gdp_life <- gdp_life %>% select(-X1, -Country1)
+gdp_life <- gdp_life %>% rename(country=Country, life_expectancy=Value)
+gdp_life
+
+```
+
+```{r}
+# create a new csv file
+write.csv(gdp_life, "gdp_life_expectancy.csv")
+```
+
