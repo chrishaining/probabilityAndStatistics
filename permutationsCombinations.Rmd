@@ -1,0 +1,122 @@
+---
+title: "Permutations and Combinations"
+output: html_notebook
+---
+
+## For a set of characters, work out the permutations 
+
+My first attempt used a package called `gtools`. However, it produced incorrect results so I will try something else.
+The `R` syntax for this is:
+`permutations(n, r, v=1:n, set=TRUE, repeats.allowed=FALSE)`
+`combinations(n, r, v=1:n, set=TRUE, repeats.allowed=FALSE)`
+
+```{r}
+library(stringr)
+library(gtools)
+
+# create a vector
+players <- c("Baggio", "Pele", "Zidane", "Maradona", "Puskas", "Muller", "Yashin", "Beckenbauer", "Charlton", "Barnes", "Messi", "Ronaldo")
+num <- length(players)
+
+#fives <- permutations(num, 5, repeats.allowed=FALSE)
+
+#fives
+
+#str_glue("There are {fives} permutations.")
+
+
+#permutations(n, r, v=1:n, set=TRUE, repeats.allowed=FALSE)
+#str_glue("There are {perms_reps} permutations, allowing for repetitions.")
+
+#THIS ATTEMPT DID NOT WORK. I SEARCHED ONLINE, BUT HAVE NOT FOUND A LIKELY PACKAGE THAT CAN PRODUCE THE CALCULATIONS I WANT. SO, I'LL MAKE MY OWN.
+
+```
+
+
+## Permutations, using my own function (no repetitions)
+
+The mathematical formula is:
+
+P=n!
+
+To get the number of permutations for a subset. For instance, how many two-letter combinations can you make from the alphabet?
+
+nPr = n! / (n-r)!
+
+_where n is the number of items in the population_
+
+_where r is the size of the subset_
+
+_where P is the number of permutations_
+
+```{r}
+# create function
+permutator <- function(populationSize, targetSize=populationSize) {
+  if (populationSize==targetSize) {
+    perms <- factorial(populationSize)
+  } else {
+    perms <- (factorial(populationSize)) / (factorial(populationSize-targetSize))
+  }
+  return(perms)
+}
+
+fives <- permutator(num)
+fives 
+
+abcd <- c("A", "B", "C", "D")
+abcdLen <- length((abcd))
+quad <- permutator(abcdLen)
+quad
+
+duo <- permutator(abcdLen, 2)
+duo
+
+```
+## Permutations with repetitions
+This one is easy. It's just n to the power of r.
+```{r}
+reps <- abcdLen ^ 3
+reps
+```
+
+
+
+## For a set of characters, work out the combinations 
+
+nCr = n! / r! * (n-r)!
+
+_where C is combination_ 
+
+
+
+```{r}
+#create a function
+combinator <- function(populationSize, targetSize) {
+  combs <- (factorial(populationSize)) / (factorial(targetSize) * factorial(populationSize-targetSize))
+  return(combs)
+}
+
+#use the function
+playerCombs <- combinator(num, 5)
+formatted <- format(playerCombs, big.mark=",")
+formatted
+
+```
+
+## Conbinations with repetitions
+
+n+r-1 C r = (n+r-1)! / r! * (n-1)!
+```{r}
+#create a function
+rep_combinator <- function(populationSize, targetSize) {
+  combs <- (factorial(populationSize+targetSize+1)) / (factorial(targetSize) * factorial(populationSize-1))
+  return(combs)
+}
+
+#use the function
+repCombs <- rep_combinator(num, 5)
+rep_formatted <- format(repCombs, big.mark=",", scientific = FALSE)
+rep_formatted
+```
+
+
